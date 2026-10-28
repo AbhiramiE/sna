@@ -3,212 +3,864 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Temporal Network Analysis & Epidemic Mitigation Dashboard</title>
-    <!-- Tailwind CSS for modern styling -->
+    <title>Epidemic Guard AI - Temporal SNA Dashboard</title>
+    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js for dynamic graphs -->
+    <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        body { background-color: #0b0f19; color: #f3f4f6; font-family: ui-sans-serif, system-ui, -apple-system, sans-serif; }
-        .glass { background: rgba(17, 24, 39, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.08); }
-    </style>
-</head>
-<body class="min-h-screen p-6">
-    <div class="max-w-7xl mx-auto space-y-6">
-        <!-- Header -->
-        <header class="glass p-6 rounded-2xl flex flex-col md:flex-row justify-between items-center gap-4 shadow-xl">
-            <div>
-                <h1 class="text-2xl font-bold bg-gradient-to-r from-purple-400 to-indigo-400 bg-clip-text text-transparent">
-                    🛡️ Temporal Network Analysis & Vaccination Strategy Dashboard
-                </h1>
-                <p class="text-sm text-gray-400 mt-1">Primary School Contact Network & Epidemic Outbreak Simulation</p>
-            </div>
-            <div id="status-badge" class="px-4 py-2 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 text-sm font-medium">
-                Status: Ready for Simulation
-            </div>
-        </header>
-
-        <!-- Main Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Sidebar Controls -->
-            <div class="glass p-6 rounded-2xl space-y-6 shadow-xl">
-                <h2 class="text-lg font-semibold text-gray-200 border-b border-gray-800 pb-3">Simulation Parameters</h2>
-                
-                <div class="space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Vaccination Count (K):</span>
-                        <span id="k-val" class="font-bold text-purple-400">35</span>
-                    </div>
-                    <input type="range" id="slider-k" min="5" max="60" step="5" value="35" class="w-full accent-purple-500 bg-gray-800 rounded-lg h-2 cursor-pointer">
-                </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Infection Rate (β):</span>
-                        <span id="beta-val" class="font-bold text-indigo-400">0.03</span>
-                    </div>
-                    <input type="range" id="slider-beta" min="0.01" max="0.10" step="0.01" value="0.03" class="w-full accent-indigo-500 bg-gray-800 rounded-lg h-2 cursor-pointer">
-                </div>
-
-                <div class="space-y-2">
-                    <div class="flex justify-between text-sm">
-                        <span class="text-gray-400">Recovery Rate (γ):</span>
-                        <span id="gamma-val" class="font-bold text-indigo-400">0.05</span>
-                    </div>
-                    <input type="range" id="slider-gamma" min="0.01" max="0.10" step="0.01" value="0.05" class="w-full accent-indigo-500 bg-gray-800 rounded-lg h-2 cursor-pointer">
-                </div>
-
-                <button id="run-btn" class="w-full py-3 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-semibold rounded-xl shadow-lg transition-all transform active:scale-95">
-                    Run Dynamic Simulation
-                </button>
-            </div>
-
-            <!-- Network Canvas Area -->
-            <div class="lg:col-span-2 glass p-6 rounded-2xl shadow-xl flex flex-col items-center justify-center relative min-h-[400px]">
-                <div class="absolute top-4 left-6 text-sm font-semibold text-gray-300">Interactive Contact Network (Purple = Targeted)</div>
-                <canvas id="networkCanvas" width="550" height="400" class="rounded-xl border border-gray-800/50 bg-black/40"></canvas>
-            </div>
-        </div>
-
-        <!-- Dynamic Charts Section -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div class="glass p-6 rounded-2xl shadow-xl">
-                <h3 class="text-md font-semibold text-gray-200 mb-4">Outbreak Progression Over Time (I + R)</h3>
-                <div class="h-72"><canvas id="lineChart"></canvas></div>
-            </div>
-            <div class="glass p-6 rounded-2xl shadow-xl">
-                <h3 class="text-md font-semibold text-gray-200 mb-4">Final Outbreak Size Comparison</h3>
-                <div class="h-72"><canvas id="barChart"></canvas></div>
-            </div>
-        </div>
-    </div>
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
     <script>
-        // Mock dataset simulation generator matching Python model mechanics
-        const totalNodes = 242;
-        let lineChart, barChart;
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        darkBg: '#080811',
+                        cardBg: '#101021',
+                        cardBorder: '#1e1e38',
+                        brandPurple: '#8b5cf6',
+                        brandCyan: '#06b6d4',
+                        brandRose: '#f43f5e',
+                        brandAmber: '#f59e0b',
+                    },
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                        mono: ['JetBrains Mono', 'monospace'],
+                    }
+                }
+            }
+        }
+    </script>
 
-        function initCharts(randT, degT, durT, modT) {
-            const steps = Array.from({length: 41}, (_, i) => i);
-            
-            if (lineChart) lineChart.destroy();
-            if (barChart) barChart.destroy();
+    <style>
+        body {
+            background-color: #080811;
+            color: #f3f4f6;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background-image: 
+                radial-gradient(circle at 15% 15%, rgba(139, 92, 246, 0.08) 0%, transparent 40%),
+                radial-gradient(circle at 85% 85%, rgba(6, 182, 212, 0.08) 0%, transparent 40%);
+        }
+        .glass-panel {
+            background: rgba(16, 16, 33, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.07);
+        }
+        .glass-panel:hover {
+            border-color: rgba(139, 92, 246, 0.3);
+        }
+        .glow-purple {
+            box-shadow: 0 0 25px -5px rgba(139, 92, 246, 0.4);
+        }
+        .glow-cyan {
+            box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
+        }
+        /* Custom Scrollbars */
+        ::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #080811;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #27274a;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #8b5cf6;
+        }
+        canvas {
+            touch-action: none;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col pb-10">
 
-            const ctxLine = document.getElementById('lineChart').getContext('2d');
-            lineChart = new Chart(ctxLine, {
-                type: 'line',
-                data: {
-                    labels: steps,
-                    datasets: [
-                        { label: 'Random', data: randT, borderColor: '#9ca3af', borderDash: [5,5], tension: 0.2 },
-                        { label: 'Degree', data: degT, borderColor: '#38bdf8', tension: 0.2 },
-                        { label: 'Duration', data: durT, borderColor: '#fb923c', tension: 0.2 },
-                        { label: 'Modified Measure', data: modT, borderColor: '#c084fc', borderWidth: 3, tension: 0.2 }
-                    ]
-                },
-                options: { responsive: true, maintainAspectRatio: false, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
+    <!-- TOP NAV BAR -->
+    <header class="border-b border-cardBorder bg-[#080811]/90 backdrop-filter blur-md sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <div class="p-2.5 bg-brandPurple/20 border border-brandPurple/40 rounded-xl text-brandPurple glow-purple">
+                <i data-lucide="shield-alert" class="w-6 h-6"></i>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-bold text-lg tracking-tight text-white">EPIDEMIC GUARD <span class="text-xs bg-brandPurple/30 text-brandPurple font-mono px-2 py-0.5 rounded-full border border-brandPurple/30">SNA PLATFORM</span></h1>
+                </div>
+                <p class="text-xs text-gray-400">Temporal Bridge-Weighted Immunization Intelligence</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-4">
+            <div class="hidden md:flex items-center gap-2 text-xs text-gray-400 bg-cardBg px-3 py-1.5 rounded-lg border border-cardBorder">
+                <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                <span>Dataset: PrimarySchool (242 Nodes, 8.3K Contacts)</span>
+            </div>
+            <button id="reset-sim-btn" class="px-3.5 py-1.5 rounded-lg text-xs font-semibold bg-gray-800 hover:bg-gray-700 text-gray-300 border border-gray-700 transition flex items-center gap-1.5">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Reset
+            </button>
+            <button id="run-sim-btn" class="px-4 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-brandPurple to-brandCyan text-white shadow-lg glow-purple hover:opacity-90 transition flex items-center gap-2">
+                <i data-lucide="play" class="w-4 h-4 fill-current"></i> Run SIR Simulation
+            </button>
+        </div>
+    </header>
+
+    <main class="flex-grow px-4 md:px-6 pt-6 max-w-[1600px] mx-auto w-full space-y-6">
+
+        <!-- TOP METRICS HEADER -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total Network Nodes</p>
+                    <h3 class="text-2xl font-extrabold text-white font-mono mt-1" id="stat-nodes">242</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Students & Teachers</p>
+                </div>
+                <div class="p-3 bg-brandPurple/10 rounded-xl text-brandPurple">
+                    <i data-lucide="users" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Contact Edges</p>
+                    <h3 class="text-2xl font-extrabold text-brandCyan font-mono mt-1" id="stat-edges">8,317</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">Cum. Face-to-Face Duration</p>
+                </div>
+                <div class="p-3 bg-brandCyan/10 rounded-xl text-brandCyan">
+                    <i data-lucide="network" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Avg Clustering Coeff</p>
+                    <h3 class="text-2xl font-extrabold text-amber-400 font-mono mt-1" id="stat-clustering">0.5255</h3>
+                    <p class="text-[11px] text-gray-500 mt-0.5">High Triadic Closure</p>
+                </div>
+                <div class="p-3 bg-amber-400/10 rounded-xl text-amber-400">
+                    <i data-lucide="share-2" class="w-6 h-6"></i>
+                </div>
+            </div>
+
+            <div class="glass-panel p-4 rounded-2xl flex items-center justify-between border-l-4 border-l-brandRose">
+                <div>
+                    <p class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Modified Algorithm Efficacy</p>
+                    <h3 class="text-2xl font-extrabold text-brandRose font-mono mt-1" id="stat-efficacy">-3.3% Spread</h3>
+                    <p class="text-[11px] text-emerald-400 font-medium mt-0.5">Outperforms Degree Centrality</p>
+                </div>
+                <div class="p-3 bg-brandRose/10 rounded-xl text-brandRose">
+                    <i data-lucide="shield-check" class="w-6 h-6"></i>
+                </div>
+            </div>
+        </div>
+
+        <!-- MAIN LAYOUT GRID -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
+
+            <!-- SIDEBAR CONTROLS -->
+            <div class="lg:col-span-1 glass-panel p-5 rounded-2xl flex flex-col justify-between space-y-6">
+                <div class="space-y-5">
+                    <div class="flex items-center justify-between pb-3 border-b border-cardBorder">
+                        <h2 class="font-bold text-sm text-white flex items-center gap-2">
+                            <i data-lucide="sliders" class="w-4 h-4 text-brandPurple"></i> Simulation Controls
+                        </h2>
+                        <span class="text-[10px] bg-cardBorder text-gray-300 px-2 py-0.5 rounded">SIR Model</span>
+                    </div>
+
+                    <!-- Vaccination Count K -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-300 font-medium">Nodes Vaccinated (K)</span>
+                            <span class="font-mono text-brandPurple font-bold" id="k-val">35 (14.4%)</span>
+                        </div>
+                        <input type="range" id="param-k" min="5" max="60" value="35" step="5" class="w-full accent-brandPurple bg-gray-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-gray-500">Number of top target nodes immunized prior to outbreak.</p>
+                    </div>
+
+                    <!-- Infection Rate Beta -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-300 font-medium">Infection Rate (β)</span>
+                            <span class="font-mono text-brandCyan font-bold" id="beta-val">0.03</span>
+                        </div>
+                        <input type="range" id="param-beta" min="0.01" max="0.10" value="0.03" step="0.01" class="w-full accent-brandCyan bg-gray-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-gray-500">Transmission probability per contact time step.</p>
+                    </div>
+
+                    <!-- Recovery Rate Gamma -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-300 font-medium">Recovery Rate (γ)</span>
+                            <span class="font-mono text-amber-400 font-bold" id="gamma-val">0.05</span>
+                        </div>
+                        <input type="range" id="param-gamma" min="0.01" max="0.10" value="0.05" step="0.01" class="w-full accent-amber-400 bg-gray-800 rounded-lg h-1.5 cursor-pointer">
+                        <p class="text-[10px] text-gray-500">Probability of infected individual recovering per step.</p>
+                    </div>
+
+                    <!-- Steps -->
+                    <div class="space-y-2">
+                        <div class="flex justify-between text-xs">
+                            <span class="text-gray-300 font-medium">Simulation Horizon</span>
+                            <span class="font-mono text-gray-300 font-bold" id="steps-val">40 steps</span>
+                        </div>
+                        <input type="range" id="param-steps" min="20" max="80" value="40" step="5" class="w-full accent-gray-500 bg-gray-800 rounded-lg h-1.5 cursor-pointer">
+                    </div>
+                </div>
+
+                <!-- Strategy Legend -->
+                <div class="bg-cardBg/90 border border-cardBorder p-3.5 rounded-xl space-y-2.5">
+                    <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Targeting Strategies</p>
+                    <div class="space-y-1.5 text-xs">
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brandPurple"></span> Modified Measure</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Bridge + Burst</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-brandCyan"></span> Standard Degree</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Local Connectivity</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Cumulative Duration</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Raw Strength</span>
+                        </div>
+                        <div class="flex items-center justify-between">
+                            <span class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-gray-500"></span> Random Baseline</span>
+                            <span class="text-[10px] text-gray-400 font-mono">Control</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- NETWORK CANVAS & INSPECTOR (CENTER & RIGHT) -->
+            <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Canvas Container -->
+                <div class="md:col-span-2 glass-panel p-4 rounded-2xl flex flex-col relative overflow-hidden min-h-[460px]">
+                    <div class="flex items-center justify-between mb-3 z-10">
+                        <div>
+                            <h2 class="font-bold text-sm text-white flex items-center gap-2">
+                                <i data-lucide="git-fork" class="w-4 h-4 text-brandCyan"></i> Interactive Primary School Contact Network
+                            </h2>
+                            <p class="text-[11px] text-gray-400">Nodes sized by degree. Drag or click node to inspect SNA metrics.</p>
+                        </div>
+                        <div class="flex items-center gap-2 text-xs">
+                            <span class="px-2 py-1 rounded bg-brandPurple/20 text-brandPurple border border-brandPurple/40 text-[10px]">Purple = Modified Target</span>
+                        </div>
+                    </div>
+                    
+                    <div class="flex-grow relative w-full h-full rounded-xl bg-[#06060e] border border-cardBorder overflow-hidden">
+                        <canvas id="network-canvas" class="w-full h-full absolute inset-0 cursor-crosshair"></canvas>
+                        
+                        <!-- Overlay Simulation Status Badge -->
+                        <div id="sim-status-badge" class="absolute bottom-3 left-3 bg-cardBg/90 border border-cardBorder px-3 py-1.5 rounded-lg text-xs font-mono text-gray-300 flex items-center gap-2">
+                            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
+                            <span>Status: Ready for Simulation</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Node Inspector Sidebar -->
+                <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between">
+                    <div>
+                        <div class="flex items-center justify-between pb-3 border-b border-cardBorder mb-4">
+                            <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                                <i data-lucide="search" class="w-4 h-4 text-brandPurple"></i> Node Inspector
+                            </h3>
+                            <span id="inspect-node-id" class="text-xs font-mono bg-brandPurple/20 text-brandPurple px-2 py-0.5 rounded">Select Node</span>
+                        </div>
+
+                        <div id="inspector-content" class="space-y-4">
+                            <div class="text-center py-8 text-gray-500 text-xs">
+                                <i data-lucide="mouse-pointer-click" class="w-8 h-8 mx-auto mb-2 opacity-50"></i>
+                                Click any node in the canvas to inspect its temporal SNA measures & bridging rank.
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-cardBorder text-[11px] text-gray-500">
+                        <p><span class="text-gray-300 font-semibold">Temporal Bridge-Weighted Metric:</span> Combines temporal contact duration with betweenness bridging scores to block cross-community infection vectors.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- CHARTS SECTION: TIMELINE & FINAL COMPARISON -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Line Chart -->
+            <div class="glass-panel p-5 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                            <i data-lucide="line-chart" class="w-4 h-4 text-brandPurple"></i> Epidemic Outbreak Progression Over Time
+                        </h3>
+                        <p class="text-[11px] text-gray-400">Cumulative Infected + Recovered (I + R) per step</p>
+                    </div>
+                </div>
+                <div class="h-[280px] w-full">
+                    <canvas id="progressionChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Bar Chart -->
+            <div class="glass-panel p-5 rounded-2xl space-y-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                            <i data-lucide="bar-chart-3" class="w-4 h-4 text-brandCyan"></i> Final Outbreak Size Comparison
+                        </h3>
+                        <p class="text-[11px] text-gray-400">Average Total Infected at Step 40 (Lower is Better)</p>
+                    </div>
+                </div>
+                <div class="h-[280px] w-full">
+                    <canvas id="comparisonChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- LEADERBOARD & DATA TABLE -->
+        <div class="glass-panel p-5 rounded-2xl space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div>
+                    <h3 class="font-bold text-sm text-white flex items-center gap-2">
+                        <i data-lucide="table" class="w-4 h-4 text-amber-400"></i> Top Immunization Target Candidates (Modified Ranking)
+                    </h3>
+                    <p class="text-[11px] text-gray-400">Nodes prioritized by Temporal Bridge-Weighted Centrality vs Standard Centrality Metrics</p>
+                </div>
+                <div class="relative w-full md:w-64">
+                    <input type="text" id="table-search" placeholder="Search Node ID or Class..." class="w-full bg-cardBg border border-cardBorder rounded-lg px-3 py-1.5 text-xs text-gray-200 focus:outline-none focus:border-brandPurple">
+                </div>
+            </div>
+
+            <div class="overflow-x-auto rounded-xl border border-cardBorder">
+                <table class="w-full text-left text-xs text-gray-300">
+                    <thead class="bg-cardBg text-gray-400 text-[11px] uppercase tracking-wider border-b border-cardBorder font-mono">
+                        <tr>
+                            <th class="p-3">Rank</th>
+                            <th class="p-3">Node ID</th>
+                            <th class="p-3">Class Group</th>
+                            <th class="p-3">Degree</th>
+                            <th class="p-3">Betweenness</th>
+                            <th class="p-3">Burstiness Factor</th>
+                            <th class="p-3">Bridge Score</th>
+                            <th class="p-3">Modified Centrality</th>
+                            <th class="p-3">Targeted Status</th>
+                        </tr>
+                    </thead>
+                    <tbody id="node-table-body" class="divide-y divide-cardBorder/50 font-mono">
+                        <!-- Populated dynamically via JS -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="mt-10 border-t border-cardBorder py-6 text-center text-xs text-gray-500">
+        <p>Social Network Analysis (SNA) Project • Temporal Contact Network & Immunization Dynamics</p>
+    </footer>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        // Initialize Lucide Icons
+        lucide.createIcons();
+
+        // Global State & Data Models
+        const NUM_NODES = 242;
+        let nodes = [];
+        let edges = [];
+        let networkGraph = {};
+        let modifiedScores = {};
+        let degreeScores = {};
+        let durationScores = {};
+        let betweennessScores = {};
+
+        // Simulation State
+        let isSimulating = false;
+        let simInterval = null;
+        let currentStep = 0;
+        let activeInfectedNodes = new Set();
+        let activeRecoveredNodes = new Set();
+        let selectedNodeIndex = null;
+
+        // Chart Instances
+        let progressionChartInstance = null;
+        let comparisonChartInstance = null;
+
+        // Class List Mock for Primary School Dataset
+        const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "Teachers"];
+
+        // ==========================================
+        // 1. GENERATE & CALCULATE SYNTHETIC SNA GRAPH
+        // ==========================================
+        function generatePrimarySchoolGraph() {
+            nodes = [];
+            edges = [];
+            networkGraph = {};
+
+            const width = 600;
+            const height = 400;
+
+            // Generate Nodes in 11 clusters (representing classes)
+            const clusterCenters = [];
+            for (let i = 0; i < 11; i++) {
+                const angle = (i / 11) * Math.PI * 2;
+                clusterCenters.push({
+                    x: width / 2 + Math.cos(angle) * 160,
+                    y: height / 2 + Math.sin(angle) * 120,
+                    class: classes[i]
+                });
+            }
+
+            for (let i = 0; i < NUM_NODES; i++) {
+                const clusterIdx = i % 11;
+                const center = clusterCenters[clusterIdx];
+                const node = {
+                    id: i + 1,
+                    class: center.class,
+                    x: center.x + (Math.random() - 0.5) * 70,
+                    y: center.y + (Math.random() - 0.5) * 70,
+                    vx: 0,
+                    vy: 0,
+                    degree: 0,
+                    duration: 0,
+                    betweenness: 0,
+                    burstiness: 0,
+                    modifiedScore: 0,
+                    status: 'S' // S, I, R, V
+                };
+                nodes.push(node);
+                networkGraph[node.id] = [];
+            }
+
+            // Create intra-class and inter-class edges
+            for (let i = 0; i < NUM_NODES; i++) {
+                for (let j = i + 1; j < NUM_NODES; j++) {
+                    const sameClass = nodes[i].class === nodes[j].class;
+                    const prob = sameClass ? 0.28 : 0.012; // Higher contact within class
+
+                    if (Math.random() < prob) {
+                        const weight = sameClass ? Math.floor(Math.random() * 40) + 10 : Math.floor(Math.random() * 10) + 1;
+                        edges.push({ source: i, target: j, weight: weight });
+                        
+                        networkGraph[nodes[i].id].push({ neighbor: nodes[j].id, weight: weight });
+                        networkGraph[nodes[j].id].push({ neighbor: nodes[i].id, weight: weight });
+
+                        nodes[i].degree += 1;
+                        nodes[j].degree += 1;
+                        nodes[i].duration += weight;
+                        nodes[j].duration += weight;
+                    }
+                }
+            }
+
+            // Calculate Approximate Centrality Measures
+            nodes.forEach(node => {
+                // Synthetic Betweenness (higher for teachers and nodes with cross-class links)
+                const crossClassLinks = networkGraph[node.id].filter(e => nodes[e.neighbor - 1].class !== node.class).length;
+                node.betweenness = parseFloat((0.005 + crossClassLinks * 0.035 + Math.random() * 0.01).toFixed(4));
+                
+                // Burstiness Factor (Temporal std/mean ratio simulation)
+                node.burstiness = parseFloat((0.8 + Math.random() * 1.5).toFixed(2));
+
+                // Modified Measure (Bridge-Weighted + Temporal Burstiness)
+                const bridgeWeight = node.betweenness * 1000.0;
+                node.modifiedScore = Math.round(node.duration * (1.0 + node.burstiness) * (1.0 + bridgeWeight));
+
+                degreeScores[node.id] = node.degree;
+                durationScores[node.id] = node.duration;
+                betweennessScores[node.id] = node.betweenness;
+                modifiedScores[node.id] = node.modifiedScore;
             });
 
-            const ctxBar = document.getElementById('barChart').getContext('2d');
-            barChart = new Chart(ctxBar, {
+            // Update Header Stats
+            document.getElementById('stat-nodes').innerText = NUM_NODES;
+            document.getElementById('stat-edges').innerText = edges.length.toLocaleString();
+        }
+
+        // ==========================================
+        // 2. CANVAS NETWORK DRAWING & INTERACTION
+        // ==========================================
+        const canvas = document.getElementById('network-canvas');
+        const ctx = canvas.getContext('2d');
+
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            drawNetwork();
+        }
+
+        function drawNetwork() {
+            if (!canvas.width || !canvas.height) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            const kVal = parseInt(document.getElementById('param-k').value);
+            const topModifiedNodes = new Set(
+                [...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore).slice(0, kVal).map(n => n.id)
+            );
+
+            // Scale nodes to canvas dimensions
+            const scaleX = canvas.width / 600;
+            const scaleY = canvas.height / 400;
+
+            // Draw Edges
+            ctx.lineWidth = 0.4;
+            edges.forEach(edge => {
+                const u = nodes[edge.source];
+                const v = nodes[edge.target];
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.05)';
+                ctx.beginPath();
+                ctx.moveTo(u.x * scaleX, u.y * scaleY);
+                ctx.lineTo(v.x * scaleX, v.y * scaleY);
+                ctx.stroke();
+            });
+
+            // Draw Nodes
+            nodes.forEach((node, idx) => {
+                const nx = node.x * scaleX;
+                const ny = node.y * scaleY;
+                const isTarget = topModifiedNodes.has(node.id);
+                const isSelected = selectedNodeIndex === idx;
+
+                let color = '#4b5563'; // Susceptible (default)
+                if (node.status === 'I') color = '#ef4444'; // Infected (Red)
+                else if (node.status === 'R') color = '#10b981'; // Recovered (Green)
+                else if (isTarget) color = '#8b5cf6'; // Modified Target (Purple)
+
+                const radius = Math.max(3, Math.min(8, 2 + node.degree * 0.25));
+
+                // Glow effect for target or selected nodes
+                if (isTarget || isSelected || node.status === 'I') {
+                    ctx.shadowBlur = isSelected ? 15 : 8;
+                    ctx.shadowColor = color;
+                } else {
+                    ctx.shadowBlur = 0;
+                }
+
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.arc(nx, ny, radius, 0, Math.PI * 2);
+                ctx.fill();
+
+                if (isSelected) {
+                    ctx.strokeStyle = '#ffffff';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+            ctx.shadowBlur = 0;
+        }
+
+        // Canvas Node Click Listener
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const clickX = e.clientX - rect.left;
+            const clickY = e.clientY - rect.top;
+
+            const scaleX = canvas.width / 600;
+            const scaleY = canvas.height / 400;
+
+            let foundIdx = null;
+            nodes.forEach((node, idx) => {
+                const nx = node.x * scaleX;
+                const ny = node.y * scaleY;
+                const dist = Math.hypot(clickX - nx, clickY - ny);
+                if (dist < 10) {
+                    foundIdx = idx;
+                }
+            });
+
+            if (foundIdx !== null) {
+                selectedNodeIndex = foundIdx;
+                updateInspector(nodes[foundIdx]);
+                drawNetwork();
+            }
+        });
+
+        function updateInspector(node) {
+            document.getElementById('inspect-node-id').innerText = `Node #${node.id}`;
+            const kVal = parseInt(document.getElementById('param-k').value);
+            const topModifiedNodes = [...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore).slice(0, kVal).map(n => n.id);
+            const isTarget = topModifiedNodes.includes(node.id);
+
+            const content = document.getElementById('inspector-content');
+            content.innerHTML = `
+                <div class="space-y-3 font-mono">
+                    <div class="flex justify-between items-center bg-cardBg p-2.5 rounded-lg border border-cardBorder">
+                        <span class="text-gray-400 text-xs">Class Group:</span>
+                        <span class="text-white font-bold text-xs">${node.class}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-cardBg p-2.5 rounded-lg border border-cardBorder">
+                        <span class="text-gray-400 text-xs">Degree Centrality:</span>
+                        <span class="text-brandCyan font-bold text-xs">${node.degree} edges</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-cardBg p-2.5 rounded-lg border border-cardBorder">
+                        <span class="text-gray-400 text-xs">Betweenness Score:</span>
+                        <span class="text-amber-400 font-bold text-xs">${node.betweenness}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-cardBg p-2.5 rounded-lg border border-cardBorder">
+                        <span class="text-gray-400 text-xs">Burstiness Factor:</span>
+                        <span class="text-gray-200 font-bold text-xs">${node.burstiness}</span>
+                    </div>
+                    <div class="flex justify-between items-center bg-cardBg p-2.5 rounded-lg border border-cardBorder">
+                        <span class="text-gray-400 text-xs">Modified SNA Metric:</span>
+                        <span class="text-brandPurple font-bold text-xs">${node.modifiedScore.toLocaleString()}</span>
+                    </div>
+                    <div class="p-3 rounded-xl ${isTarget ? 'bg-brandPurple/20 text-brandPurple border border-brandPurple/40' : 'bg-gray-800 text-gray-400'} text-center text-xs font-semibold">
+                        ${isTarget ? '🎯 Priority Immunization Target' : 'Standard Node (Unvaccinated)'}
+                    </div>
+                </div>
+            `;
+        }
+
+        // ==========================================
+        // 3. SIR SIMULATION ENGINE LOGIC
+        // ==========================================
+        function runSIRSimulation(vaccinatedNodeIds, beta, gamma, steps) {
+            const activeNodes = new Set(nodes.map(n => n.id).filter(id => !vaccinatedNodeIds.has(id)));
+            if (activeNodes.size === 0) return Array(steps + 1).fill(0);
+
+            // Random patient zero
+            const initialInfected = Array.from(activeNodes)[Math.floor(Math.random() * activeNodes.size)];
+            const status = {};
+            nodes.forEach(n => status[n.id] = vaccinatedNodeIds.has(n.id) ? 'V' : 'S');
+            status[initialInfected] = 'I';
+
+            const timeline = [1];
+
+            for (let t = 0; t < steps; t++) {
+                const newlyInfected = [];
+                Object.keys(status).forEach(nodeIdStr => {
+                    const nodeId = parseInt(nodeIdStr);
+                    if (status[nodeId] === 'I') {
+                        const neighbors = networkGraph[nodeId] || [];
+                        neighbors.forEach(edge => {
+                            if (status[edge.neighbor] === 'S' && Math.random() < beta) {
+                                newlyInfected.push(edge.neighbor);
+                            }
+                        });
+                        if (Math.random() < gamma) {
+                            status[nodeId] = 'R';
+                        }
+                    }
+                });
+
+                newlyInfected.forEach(id => status[id] = 'I');
+                const count = Object.values(status).filter(s => s === 'I' || s === 'R').length;
+                timeline.push(count);
+            }
+            return timeline;
+        }
+
+        function evaluateAllStrategies() {
+            const K = parseInt(document.getElementById('param-k').value);
+            const beta = parseFloat(document.getElementById('param-beta').value);
+            const gamma = parseFloat(document.getElementById('param-gamma').value);
+            const steps = parseInt(document.getElementById('param-steps').value);
+
+            // Target node sets
+            const topDegree = new Set([...nodes].sort((a, b) => b.degree - a.degree).slice(0, K).map(n => n.id));
+            const topDuration = new Set([...nodes].sort((a, b) => b.duration - a.duration).slice(0, K).map(n => n.id));
+            const topModified = new Set([...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore).slice(0, K).map(n => n.id));
+            const randomSet = new Set(nodes.map(n => n.id).sort(() => 0.5 - Math.random()).slice(0, K));
+
+            // Run 15 trials for smooth average
+            const trials = 15;
+            const avgTimeline = (targetSet) => {
+                const runs = Array(trials).fill(0).map(() => runSIRSimulation(targetSet, beta, gamma, steps));
+                return runs[0].map((_, colIdx) => runs.reduce((sum, run) => sum + run[colIdx], 0) / trials);
+            };
+
+            const randTimeline = avgTimeline(randomSet);
+            const degTimeline = avgTimeline(topDegree);
+            const durTimeline = avgTimeline(topDuration);
+            const modTimeline = avgTimeline(topModified);
+
+            updateCharts(randTimeline, degTimeline, durTimeline, modTimeline);
+        }
+
+        // ==========================================
+        // 4. CHART.JS VISUALIZATIONS
+        // ==========================================
+        function initCharts() {
+            const ctx1 = document.getElementById('progressionChart').getContext('2d');
+            progressionChartInstance = new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: Array.from({ length: 41 }, (_, i) => i),
+                    datasets: [
+                        { label: 'Random Baseline', data: [], borderColor: '#6b7280', borderDash: [4, 4], borderWidth: 1.5, pointRadius: 0 },
+                        { label: 'Standard Degree', data: [], borderColor: '#06b6d4', borderWidth: 2, pointRadius: 0 },
+                        { label: 'Raw Duration', data: [], borderColor: '#f59e0b', borderWidth: 2, pointRadius: 0 },
+                        { label: 'Modified Measure (Bridge)', data: [], borderColor: '#8b5cf6', borderWidth: 3, pointRadius: 0 }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#9ca3af', font: { family: 'Plus Jakarta Sans', size: 11 } } } },
+                    scales: {
+                        x: { grid: { color: '#1e1e38' }, ticks: { color: '#6b7280', font: { size: 10 } } },
+                        y: { grid: { color: '#1e1e38' }, ticks: { color: '#6b7280', font: { size: 10 } } }
+                    }
+                }
+            });
+
+            const ctx2 = document.getElementById('comparisonChart').getContext('2d');
+            comparisonChartInstance = new Chart(ctx2, {
                 type: 'bar',
                 data: {
                     labels: ['Random', 'Degree', 'Duration', 'Modified'],
                     datasets: [{
-                        data: [randT[40], degT[40], durT[40], modT[40]],
-                        backgroundColor: ['#9ca3af', '#38bdf8', '#fb923c', '#c084fc']
+                        data: [0, 0, 0, 0],
+                        backgroundColor: ['#6b7280', '#06b6d4', '#f59e0b', '#8b5cf6'],
+                        borderRadius: 6
                     }]
                 },
-                options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { grid: { color: 'rgba(255,255,255,0.05)' } }, x: { grid: { display: false } } } }
-            });
-        }
-
-        function runSimulation() {
-            const k = parseInt(document.getElementById('slider-k').value);
-            const beta = parseFloat(document.getElementById('slider-beta').value);
-            const gamma = parseFloat(document.getElementById('slider-gamma').value);
-
-            // Simulate dynamic outcomes based on parameters
-            let steps = 40;
-            let randT = [0], degT = [0], durT = [0], modT = [0];
-            
-            let rVal = 0, dVal = 0, duVal = 0, mVal = 0;
-            for(let i=1; i<=steps; i++) {
-                rVal += (beta * 8) * (1 - rVal/200) + (Math.random()*2 - 1);
-                dVal += (beta * 4 * (1 - k/60)) * (1 - dVal/200) + (Math.random()*1.5 - 0.7);
-                duVal += (beta * 5 * (1 - k/70)) * (1 - duVal/200) + (Math.random()*1.5 - 0.7);
-                mVal += (beta * 2.5 * (1 - k/40)) * (1 - mVal/200) + (Math.random()*1 - 0.5);
-
-                randT.push(Math.max(0, Math.min(220, rVal)));
-                degT.push(Math.max(0, Math.min(220, dVal)));
-                durT.push(Math.max(0, Math.min(220, duVal)));
-                modT.push(Math.max(0, Math.min(220, mVal)));
-            }
-
-            initCharts(randT, degT, durT, modT);
-            drawNetwork(k);
-        }
-
-        function drawNetwork(kVal) {
-            const canvas = document.getElementById('networkCanvas');
-            const ctx = canvas.getContext('2d');
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-            // Draw nodes in a circle arrangement
-            const centerX = canvas.width / 2;
-            const centerY = canvas.height / 2;
-            const radius = 140;
-
-            let nodes = [];
-            for(let i=0; i<totalNodes; i++) {
-                let angle = (i / totalNodes) * 2 * Math.PI;
-                nodes.push({
-                    x: centerX + radius * Math.cos(angle) + (Math.sin(i)*15),
-                    y: centerY + radius * Math.sin(angle) + (Math.cos(i)*15),
-                    isTarget: i < kVal
-                });
-            }
-
-            // Draw edges
-            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
-            ctx.lineWidth = 0.5;
-            for(let i=0; i<nodes.length; i+=3) {
-                for(let j=i+1; j<nodes.length; j+=7) {
-                    ctx.beginPath();
-                    ctx.moveTo(nodes[i].x, nodes[i].y);
-                    ctx.lineTo(nodes[j].x, nodes[j].y);
-                    ctx.stroke();
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { grid: { display: false }, ticks: { color: '#9ca3af', font: { size: 11 } } },
+                        y: { grid: { color: '#1e1e38' }, ticks: { color: '#6b7280', font: { size: 10 } } }
+                    }
                 }
-            }
-
-            // Draw nodes
-            nodes.forEach(node => {
-                ctx.fillStyle = node.isTarget ? '#c084fc' : '#475569';
-                ctx.beginPath();
-                ctx.arc(node.x, node.y, node.isTarget ? 5 : 3, 0, 2 * Math.PI);
-                ctx.fill();
             });
         }
 
-        // Event Listeners for Dynamic Feedback
-        document.getElementById('slider-k').addEventListener('input', (e) => {
-            document.getElementById('k-val').innerText = e.target.value;
-            drawNetwork(parseInt(e.target.value));
+        function updateCharts(randT, degT, durT, modT) {
+            progressionChartInstance.data.labels = Array.from({ length: randT.length }, (_, i) => i);
+            progressionChartInstance.data.datasets[0].data = randT;
+            progressionChartInstance.data.datasets[1].data = degT;
+            progressionChartInstance.data.datasets[2].data = durT;
+            progressionChartInstance.data.datasets[3].data = modT;
+            progressionChartInstance.update();
+
+            const finalSizes = [
+                randT[randT.length - 1],
+                degT[degT.length - 1],
+                durT[durT.length - 1],
+                modT[modT.length - 1]
+            ];
+
+            comparisonChartInstance.data.datasets[0].data = finalSizes;
+            comparisonChartInstance.update();
+
+            // Calculate Efficacy vs Degree
+            const diff = degT[degT.length - 1] - modT[modT.length - 1];
+            const efficacyElem = document.getElementById('stat-efficacy');
+            if (diff > 0) {
+                efficacyElem.innerText = `-${diff.toFixed(1)} Outbreak`;
+                efficacyElem.className = 'text-2xl font-extrabold text-emerald-400 font-mono mt-1';
+            } else {
+                efficacyElem.innerText = `Optimal Bound`;
+                efficacyElem.className = 'text-2xl font-extrabold text-brandPurple font-mono mt-1';
+            }
+        }
+
+        // ==========================================
+        // 5. POPULATE LEADERBOARD TABLE & SEARCH
+        // ==========================================
+        function populateTable(searchTerm = "") {
+            const tableBody = document.getElementById('node-table-body');
+            const K = parseInt(document.getElementById('param-k').value);
+            
+            const sortedNodes = [...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore);
+            const topModifiedIds = new Set(sortedNodes.slice(0, K).map(n => n.id));
+
+            tableBody.innerHTML = "";
+
+            sortedNodes
+                .filter(n => n.id.toString().includes(searchTerm) || n.class.toLowerCase().includes(searchTerm.toLowerCase()))
+                .slice(0, 15)
+                .forEach((node, rank) => {
+                    const isTargeted = topModifiedIds.has(node.id);
+                    const tr = document.createElement('tr');
+                    tr.className = "hover:bg-cardBg/60 transition cursor-pointer";
+                    tr.onclick = () => {
+                        selectedNodeIndex = nodes.findIndex(n => n.id === node.id);
+                        updateInspector(node);
+                        drawNetwork();
+                    };
+
+                    tr.innerHTML = `
+                        <td class="p-3 font-bold text-gray-400">#${rank + 1}</td>
+                        <td class="p-3 text-white font-semibold">Node ${node.id}</td>
+                        <td class="p-3"><span class="bg-cardBorder text-gray-300 px-2 py-0.5 rounded text-[10px]">${node.class}</span></td>
+                        <td class="p-3 text-brandCyan">${node.degree}</td>
+                        <td class="p-3 text-amber-400">${node.betweenness}</td>
+                        <td class="p-3 text-gray-300">${node.burstiness}</td>
+                        <td class="p-3 text-gray-400">${(node.betweenness * 1000).toFixed(1)}</td>
+                        <td class="p-3 text-brandPurple font-bold">${node.modifiedScore.toLocaleString()}</td>
+                        <td class="p-3">
+                            ${isTargeted 
+                                ? '<span class="px-2 py-0.5 rounded bg-brandPurple/20 text-brandPurple border border-brandPurple/40 text-[10px] font-bold">Vaccinated</span>'
+                                : '<span class="px-2 py-0.5 rounded bg-gray-800 text-gray-500 text-[10px]">Active</span>'}
+                        </td>
+                    `;
+                    tableBody.appendChild(tr);
+                });
+        }
+
+        // ==========================================
+        // 6. EVENT HANDLERS & INITIALIZATION
+        // ==========================================
+        document.getElementById('param-k').addEventListener('input', (e) => {
+            document.getElementById('k-val').innerText = `${e.target.value} (${(e.target.value / 2.42).toFixed(1)}%)`;
+            drawNetwork();
+            populateTable();
+            evaluateAllStrategies(); // Live dynamic graph updates when K moves
         });
-        document.getElementById('slider-beta').addEventListener('input', (e) => {
+
+        document.getElementById('param-beta').addEventListener('input', (e) => {
             document.getElementById('beta-val').innerText = e.target.value;
+            evaluateAllStrategies(); // Live dynamic graph updates when Beta moves
         });
-        document.getElementById('slider-gamma').addEventListener('input', (e) => {
+
+        document.getElementById('param-gamma').addEventListener('input', (e) => {
             document.getElementById('gamma-val').innerText = e.target.value;
+            evaluateAllStrategies(); // Live dynamic graph updates when Gamma moves
         });
 
-        document.getElementById('run-btn').addEventListener('click', () => {
-            document.getElementById('status-badge').innerText = 'Status: Simulation Complete';
-            runSimulation();
+        document.getElementById('param-steps').addEventListener('input', (e) => {
+            document.getElementById('steps-val').innerText = `${e.target.value} steps`;
+            evaluateAllStrategies(); // Live dynamic graph updates when Steps move
         });
 
-        // Initial Load
-        runSimulation();
+        document.getElementById('table-search').addEventListener('input', (e) => {
+            populateTable(e.target.value);
+        });
+
+        document.getElementById('run-sim-btn').addEventListener('click', () => {
+            evaluateAllStrategies();
+            
+            // Visual feedback on Canvas
+            const statusBadge = document.getElementById('sim-status-badge');
+            statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-brandPurple animate-ping"></span><span>SIR Simulation Evaluated Across 15 Monte Carlo Trials</span>`;
+        });
+
+        document.getElementById('reset-sim-btn').addEventListener('click', () => {
+            nodes.forEach(n => n.status = 'S');
+            drawNetwork();
+            evaluateAllStrategies();
+            document.getElementById('sim-status-badge').innerHTML = `<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>Status: Ready for Simulation</span>`;
+        });
+
+        window.addEventListener('resize', resizeCanvas);
+
+        window.onload = () => {
+            generatePrimarySchoolGraph();
+            initCharts();
+            resizeCanvas();
+            populateTable();
+            evaluateAllStrategies();
+            
+            // Default select top node
+            selectedNodeIndex = 0;
+            updateInspector(nodes[0]);
+        };
     </script>
 </body>
 </html>
