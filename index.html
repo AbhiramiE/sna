@@ -772,10 +772,13 @@
 
             tableBody.innerHTML = "";
 
-            sortedNodes
-                .filter(n => n.id.toString().includes(searchTerm) || n.class.toLowerCase().includes(searchTerm.toLowerCase()))
+            // Pre-calculate true global rank for every node before filtering
+            const rankedNodes = sortedNodes.map((node, globalIndex) => ({ node, globalRank: globalIndex + 1 }));
+
+            rankedNodes
+                .filter(({ node }) => node.id.toString().includes(searchTerm) || node.class.toLowerCase().includes(searchTerm.toLowerCase()))
                 .slice(0, 15)
-                .forEach((node, rank) => {
+                .forEach(({ node, globalRank }) => {
                     const isTargeted = topModifiedIds.has(node.id);
                     const tr = document.createElement('tr');
                     tr.className = "hover:bg-cardBg/60 transition cursor-pointer";
@@ -786,7 +789,7 @@
                     };
 
                     tr.innerHTML = `
-                        <td class="p-3 font-bold text-gray-400">#${rank + 1}</td>
+                        <td class="p-3 font-bold text-gray-400">#${globalRank}</td>
                         <td class="p-3 text-white font-semibold">Node ${node.id}</td>
                         <td class="p-3"><span class="bg-cardBorder text-gray-300 px-2 py-0.5 rounded text-[10px]">${node.class}</span></td>
                         <td class="p-3 text-brandCyan">${node.degree}</td>
