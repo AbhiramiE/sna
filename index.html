@@ -4,13 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Epidemic Guard AI - Temporal SNA Dashboard</title>
-    <!-- Tailwind CSS -->
+  
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- Chart.js -->
+    
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <!-- Lucide Icons -->
+   
     <script src="https://unpkg.com/lucide@latest"></script>
-    <!-- Google Fonts -->
+   
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
 
     <script>
@@ -58,7 +58,7 @@
         .glow-cyan {
             box-shadow: 0 0 25px -5px rgba(6, 182, 212, 0.4);
         }
-        /* Custom Scrollbars */
+       
         ::-webkit-scrollbar {
             width: 6px;
             height: 6px;
@@ -80,7 +80,7 @@
 </head>
 <body class="min-h-screen flex flex-col pb-10">
 
-    <!-- TOP NAV BAR (Clean & Crisp - No Blur) -->
+    
     <header class="border-b border-cardBorder bg-[#080811] sticky top-0 z-50 px-6 py-3.5 flex items-center justify-between">
         <div class="flex items-center gap-3">
             <div class="p-2.5 bg-brandPurple/20 border border-brandPurple/40 rounded-xl text-brandPurple glow-purple">
@@ -110,7 +110,7 @@
 
     <main class="flex-grow px-4 md:px-6 pt-6 max-w-[1600px] mx-auto w-full space-y-6">
 
-        <!-- TOP METRICS HEADER -->
+       
         <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
             <div class="glass-panel p-4 rounded-2xl flex items-center justify-between">
                 <div>
@@ -157,10 +157,12 @@
             </div>
         </div>
 
-        <!-- MAIN LAYOUT GRID -->
+       
+        
         <div class="grid grid-cols-1 lg:grid-cols-4 gap-6">
 
-            <!-- SIDEBAR CONTROLS -->
+          
+            
             <div class="lg:col-span-1 glass-panel p-5 rounded-2xl flex flex-col justify-between space-y-6">
                 <div class="space-y-5">
                     <div class="flex items-center justify-between pb-3 border-b border-cardBorder">
@@ -170,7 +172,8 @@
                         <span class="text-[10px] bg-cardBorder text-gray-300 px-2 py-0.5 rounded">SIR Model</span>
                     </div>
 
-                    <!-- Vaccination Count K -->
+                   
+                    
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-300 font-medium">Nodes Vaccinated (K)</span>
@@ -180,7 +183,8 @@
                         <p class="text-[10px] text-gray-500">Number of top target nodes immunized prior to outbreak.</p>
                     </div>
 
-                    <!-- Infection Rate Beta -->
+                   
+                    
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-300 font-medium">Infection Rate (β)</span>
@@ -190,7 +194,8 @@
                         <p class="text-[10px] text-gray-500">Transmission probability per contact time step.</p>
                     </div>
 
-                    <!-- Recovery Rate Gamma -->
+                   
+                    
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-300 font-medium">Recovery Rate (γ)</span>
@@ -200,7 +205,8 @@
                         <p class="text-[10px] text-gray-500">Probability of infected individual recovering per step.</p>
                     </div>
 
-                    <!-- Steps -->
+                   
+                    
                     <div class="space-y-2">
                         <div class="flex justify-between text-xs">
                             <span class="text-gray-300 font-medium">Simulation Horizon</span>
@@ -210,7 +216,8 @@
                     </div>
                 </div>
 
-                <!-- Strategy Legend -->
+              
+                
                 <div class="bg-cardBg/90 border border-cardBorder p-3.5 rounded-xl space-y-2.5">
                     <p class="text-[11px] font-semibold text-gray-400 uppercase tracking-wider">Targeting Strategies</p>
                     <div class="space-y-1.5 text-xs">
@@ -234,9 +241,11 @@
                 </div>
             </div>
 
-            <!-- NETWORK CANVAS & INSPECTOR (CENTER & RIGHT) -->
+            
+            
             <div class="lg:col-span-3 grid grid-cols-1 md:grid-cols-3 gap-6">
-                <!-- Canvas Container -->
+              
+                
                 <div class="md:col-span-2 glass-panel p-4 rounded-2xl flex flex-col relative overflow-hidden min-h-[460px]">
                     <div class="flex items-center justify-between mb-3 z-10">
                         <div>
@@ -253,7 +262,8 @@
                     <div class="flex-grow relative w-full h-full rounded-xl bg-[#06060e] border border-cardBorder overflow-hidden">
                         <canvas id="network-canvas" class="w-full h-full absolute inset-0 cursor-crosshair"></canvas>
                         
-                        <!-- Overlay Simulation Status Badge -->
+                       
+                        
                         <div id="sim-status-badge" class="absolute bottom-3 left-3 bg-cardBg/90 border border-cardBorder px-3 py-1.5 rounded-lg text-xs font-mono text-gray-300 flex items-center gap-2">
                             <span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span>
                             <span>Status: Ready for Simulation</span>
@@ -261,7 +271,8 @@
                     </div>
                 </div>
 
-                <!-- Node Inspector Sidebar -->
+               
+                
                 <div class="glass-panel p-5 rounded-2xl flex flex-col justify-between">
                     <div>
                         <div class="flex items-center justify-between pb-3 border-b border-cardBorder mb-4">
@@ -286,9 +297,11 @@
             </div>
         </div>
 
-        <!-- CHARTS SECTION: TIMELINE & FINAL COMPARISON -->
+       
+        
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Line Chart -->
+           
+            
             <div class="glass-panel p-5 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between">
                     <div>
@@ -303,7 +316,8 @@
                 </div>
             </div>
 
-            <!-- Bar Chart -->
+            
+            
             <div class="glass-panel p-5 rounded-2xl space-y-3">
                 <div class="flex items-center justify-between">
                     <div>
@@ -319,7 +333,8 @@
             </div>
         </div>
 
-        <!-- LEADERBOARD & DATA TABLE -->
+      
+        
         <div class="glass-panel p-5 rounded-2xl space-y-4">
             <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
@@ -349,24 +364,29 @@
                         </tr>
                     </thead>
                     <tbody id="node-table-body" class="divide-y divide-cardBorder/50 font-mono">
-                        <!-- Populated dynamically via JS -->
+                       
+                        
                     </tbody>
                 </table>
             </div>
         </div>
     </main>
 
-    <!-- FOOTER -->
+  
+    
     <footer class="mt-10 border-t border-cardBorder py-6 text-center text-xs text-gray-500">
         <p>Social Network Analysis (SNA) Project • Temporal Contact Network & Immunization Dynamics</p>
     </footer>
 
-    <!-- JAVASCRIPT LOGIC -->
+    
+    
     <script>
-        // Initialize Lucide Icons
+
+        
         lucide.createIcons();
 
-        // Global State & Data Models
+       
+        
         const NUM_NODES = 242;
         let nodes = [];
         let edges = [];
@@ -376,7 +396,8 @@
         let durationScores = {};
         let betweennessScores = {};
 
-        // Simulation State
+       
+        
         let isSimulating = false;
         let simInterval = null;
         let currentStep = 0;
@@ -384,16 +405,17 @@
         let activeRecoveredNodes = new Set();
         let selectedNodeIndex = null;
 
-        // Chart Instances
+      
+        
         let progressionChartInstance = null;
         let comparisonChartInstance = null;
 
-        // Class List Mock for Primary School Dataset
+       
+        
         const classes = ["1A", "1B", "2A", "2B", "3A", "3B", "4A", "4B", "5A", "5B", "Teachers"];
 
-        // ==========================================
-        // 1. GENERATE & CALCULATE SYNTHETIC SNA GRAPH
-        // ==========================================
+        
+        
         function generatePrimarySchoolGraph() {
             nodes = [];
             edges = [];
@@ -402,7 +424,8 @@
             const width = 600;
             const height = 400;
 
-            // Generate Nodes in 11 clusters (representing classes)
+           
+            
             const clusterCenters = [];
             for (let i = 0; i < 11; i++) {
                 const angle = (i / 11) * Math.PI * 2;
@@ -428,17 +451,20 @@
                     betweenness: 0,
                     burstiness: 0,
                     modifiedScore: 0,
-                    status: 'S' // S, I, R, V
+                    status: 'S' 
+                    
                 };
                 nodes.push(node);
                 networkGraph[node.id] = [];
             }
 
-            // Create intra-class and inter-class edges
+          
+            
             for (let i = 0; i < NUM_NODES; i++) {
                 for (let j = i + 1; j < NUM_NODES; j++) {
                     const sameClass = nodes[i].class === nodes[j].class;
-                    const prob = sameClass ? 0.28 : 0.012; // Higher contact within class
+                    const prob = sameClass ? 0.28 : 0.012; 
+                    
 
                     if (Math.random() < prob) {
                         const weight = sameClass ? Math.floor(Math.random() * 40) + 10 : Math.floor(Math.random() * 10) + 1;
@@ -455,16 +481,20 @@
                 }
             }
 
-            // Calculate Approximate Centrality Measures
+           
+            
             nodes.forEach(node => {
-                // Synthetic Betweenness (higher for teachers and nodes with cross-class links)
+              
+                
                 const crossClassLinks = networkGraph[node.id].filter(e => nodes[e.neighbor - 1].class !== node.class).length;
                 node.betweenness = parseFloat((0.005 + crossClassLinks * 0.035 + Math.random() * 0.01).toFixed(4));
                 
-                // Burstiness Factor (Temporal std/mean ratio simulation)
+               
+                
                 node.burstiness = parseFloat((0.8 + Math.random() * 1.5).toFixed(2));
 
-                // Modified Measure (Bridge-Weighted + Temporal Burstiness)
+            
+                
                 const bridgeWeight = node.betweenness * 1000.0;
                 node.modifiedScore = Math.round(node.duration * (1.0 + node.burstiness) * (1.0 + bridgeWeight));
 
@@ -474,14 +504,14 @@
                 modifiedScores[node.id] = node.modifiedScore;
             });
 
-            // Update Header Stats
+          
+            
             document.getElementById('stat-nodes').innerText = NUM_NODES;
             document.getElementById('stat-edges').innerText = edges.length.toLocaleString();
         }
 
-        // ==========================================
-        // 2. CANVAS NETWORK DRAWING & INTERACTION
-        // ==========================================
+      
+        
         const canvas = document.getElementById('network-canvas');
         const ctx = canvas.getContext('2d');
 
@@ -500,11 +530,12 @@
                 [...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore).slice(0, kVal).map(n => n.id)
             );
 
-            // Scale nodes to canvas dimensions
+          
+            
             const scaleX = canvas.width / 600;
             const scaleY = canvas.height / 400;
 
-            // Draw Edges
+            
             ctx.lineWidth = 0.4;
             edges.forEach(edge => {
                 const u = nodes[edge.source];
@@ -516,21 +547,27 @@
                 ctx.stroke();
             });
 
-            // Draw Nodes
+           
+            
             nodes.forEach((node, idx) => {
                 const nx = node.x * scaleX;
                 const ny = node.y * scaleY;
                 const isTarget = topModifiedNodes.has(node.id);
                 const isSelected = selectedNodeIndex === idx;
 
-                let color = '#4b5563'; // Susceptible (default)
-                if (node.status === 'I') color = '#ef4444'; // Infected (Red)
-                else if (node.status === 'R') color = '#10b981'; // Recovered (Green)
-                else if (isTarget) color = '#8b5cf6'; // Modified Target (Purple)
+                let color = '#4b5563'; 
+                
+                if (node.status === 'I') color = '#ef4444'; 
+                    
+                else if (node.status === 'R') color = '#10b981'; 
+                    
+                else if (isTarget) color = '#8b5cf6'; 
+                
 
                 const radius = Math.max(3, Math.min(8, 2 + node.degree * 0.25));
 
-                // Glow effect for target or selected nodes
+              
+                
                 if (isTarget || isSelected || node.status === 'I') {
                     ctx.shadowBlur = isSelected ? 15 : 8;
                     ctx.shadowColor = color;
@@ -552,7 +589,8 @@
             ctx.shadowBlur = 0;
         }
 
-        // Canvas Node Click Listener
+      
+        
         canvas.addEventListener('click', (e) => {
             const rect = canvas.getBoundingClientRect();
             const clickX = e.clientX - rect.left;
@@ -614,9 +652,8 @@
             `;
         }
 
-        // ==========================================
-        // 3. SIR SIMULATION ENGINE LOGIC
-        // ==========================================
+       
+        
         function runSIRSimulation(vaccinatedNodeIds, beta, gamma, steps) {
             const activeNodes = new Set(nodes.map(n => n.id).filter(id => !vaccinatedNodeIds.has(id)));
             if (activeNodes.size === 0) return Array(steps + 1).fill(0);
@@ -665,7 +702,8 @@
             const topModified = new Set([...nodes].sort((a, b) => b.modifiedScore - a.modifiedScore).slice(0, K).map(n => n.id));
             const randomSet = new Set(nodes.map(n => n.id).sort(() => 0.5 - Math.random()).slice(0, K));
 
-            // Run 15 trials for smooth average
+         
+            
             const trials = 15;
             const avgTimeline = (targetSet) => {
                 const runs = Array(trials).fill(0).map(() => runSIRSimulation(targetSet, beta, gamma, steps));
@@ -680,9 +718,8 @@
             updateCharts(randTimeline, degTimeline, durTimeline, modTimeline);
         }
 
-        // ==========================================
-        // 4. CHART.JS VISUALIZATIONS
-        // ==========================================
+      
+        
         function initCharts() {
             const ctx1 = document.getElementById('progressionChart').getContext('2d');
             progressionChartInstance = new Chart(ctx1, {
@@ -748,7 +785,7 @@
             comparisonChartInstance.data.datasets[0].data = finalSizes;
             comparisonChartInstance.update();
 
-            // Calculate Efficacy vs Degree
+            
             const diff = degT[degT.length - 1] - modT[modT.length - 1];
             const efficacyElem = document.getElementById('stat-efficacy');
             if (diff > 0) {
@@ -760,9 +797,8 @@
             }
         }
 
-       // ==========================================
-        // 5. POPULATE LEADERBOARD TABLE & SEARCH
-        // ==========================================
+       
+        
         function populateTable(searchTerm = "") {
             const tableBody = document.getElementById('node-table-body');
             const K = parseInt(document.getElementById('param-k').value);
@@ -772,7 +808,8 @@
 
             tableBody.innerHTML = "";
 
-            // Pre-calculate true global rank for every node before filtering
+           
+            
             const rankedNodes = sortedNodes.map((node, globalIndex) => ({ node, globalRank: globalIndex + 1 }));
 
             rankedNodes
@@ -807,29 +844,32 @@
                 });
         }
 
-        // ==========================================
-        // 6. EVENT HANDLERS & INITIALIZATION
-        // ==========================================
+      
+        
         document.getElementById('param-k').addEventListener('input', (e) => {
             document.getElementById('k-val').innerText = `${e.target.value} (${(e.target.value / 2.42).toFixed(1)}%)`;
             drawNetwork();
             populateTable();
-            evaluateAllStrategies(); // Live dynamic graph updates when K moves
+            evaluateAllStrategies(); 
+            
         });
 
         document.getElementById('param-beta').addEventListener('input', (e) => {
             document.getElementById('beta-val').innerText = e.target.value;
-            evaluateAllStrategies(); // Live dynamic graph updates when Beta moves
+            evaluateAllStrategies(); 
+            
         });
 
         document.getElementById('param-gamma').addEventListener('input', (e) => {
             document.getElementById('gamma-val').innerText = e.target.value;
-            evaluateAllStrategies(); // Live dynamic graph updates when Gamma moves
+            evaluateAllStrategies(); 
+            
         });
 
         document.getElementById('param-steps').addEventListener('input', (e) => {
             document.getElementById('steps-val').innerText = `${e.target.value} steps`;
-            evaluateAllStrategies(); // Live dynamic graph updates when Steps move
+            evaluateAllStrategies(); 
+            
         });
 
         document.getElementById('table-search').addEventListener('input', (e) => {
@@ -838,8 +878,8 @@
 
         document.getElementById('run-sim-btn').addEventListener('click', () => {
             evaluateAllStrategies();
+
             
-            // Visual feedback on Canvas
             const statusBadge = document.getElementById('sim-status-badge');
             statusBadge.innerHTML = `<span class="w-2 h-2 rounded-full bg-brandPurple animate-ping"></span><span>SIR Simulation Evaluated Across 15 Monte Carlo Trials</span>`;
         });
@@ -859,8 +899,8 @@
             resizeCanvas();
             populateTable();
             evaluateAllStrategies();
+
             
-            // Default select top node
             selectedNodeIndex = 0;
             updateInspector(nodes[0]);
         };
